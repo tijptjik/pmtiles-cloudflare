@@ -7,7 +7,7 @@ import {
   Source,
   TileType,
 } from "pmtiles";
-import { pmtiles_path, tile_path } from "../../shared/index";
+import { pmtiles_path, tile_path } from "./shared/index";
 
 interface Env {
   // biome-ignore lint: config name
