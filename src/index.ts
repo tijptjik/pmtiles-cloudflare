@@ -11,7 +11,17 @@ import { pmtiles_path, tile_path } from "./shared/index";
 
 interface Env {
   // biome-ignore lint: config name
-  ALLOWED_ORIGINS?: string;
+  DIAGNOSTIC_ORIGINS?: string;
+  // biome-ignore lint: config name
+  DEV_ORIGINS?: string;
+  // biome-ignore lint: config name
+  CORE_ORIGIN_SUFFIXES?: string;
+  // biome-ignore lint: config name
+  HUB_ORIGINS?: string;
+  // biome-ignore lint: config name
+  PREVIEW_PREFIXES?: string;
+  // biome-ignore lint: config name
+  EXTERNAL_ORIGINS?: string;
   // biome-ignore lint: config name
   BUCKET: R2Bucket;
   // biome-ignore lint: config name
@@ -23,6 +33,64 @@ interface Env {
 }
 
 class KeyNotFoundError extends Error {}
+
+const normalizeCsv = (value?: string): string[] =>
+  (value ?? "")
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+const getAllowedOrigin = (requestOrigin: string | null, env: Env): string => {
+  if (!requestOrigin) return "";
+
+  let parsedOrigin: URL;
+  try {
+    parsedOrigin = new URL(requestOrigin);
+  } catch {
+    return "";
+  }
+
+  const hostname = parsedOrigin.hostname.toLowerCase();
+  const origin = parsedOrigin.origin;
+
+  const hubOrigins = normalizeCsv(env.HUB_ORIGINS);
+  const previewPrefixes = normalizeCsv(env.PREVIEW_PREFIXES);
+  const derivedPreviewOrigins = hubOrigins.flatMap((hubOrigin) => {
+    try {
+      const parsedHubOrigin = new URL(hubOrigin);
+      return previewPrefixes.map((prefix) => {
+        const normalizedPrefix = prefix.endsWith(".") ? prefix : `${prefix}.`;
+        return `${parsedHubOrigin.protocol}//${normalizedPrefix}${parsedHubOrigin.hostname}`;
+      });
+    } catch {
+      return [];
+    }
+  });
+
+  const exactOrigins = new Set([
+    ...normalizeCsv(env.DIAGNOSTIC_ORIGINS),
+    ...normalizeCsv(env.DEV_ORIGINS),
+    ...hubOrigins,
+    ...derivedPreviewOrigins,
+    ...normalizeCsv(env.EXTERNAL_ORIGINS),
+  ]);
+
+  if (exactOrigins.has("*") || exactOrigins.has(origin)) {
+    return origin;
+  }
+
+  const allowedSuffixes = normalizeCsv(env.CORE_ORIGIN_SUFFIXES).map((suffix) =>
+    suffix.replace(/^\*\./, ".").toLowerCase()
+  );
+
+  for (const suffix of allowedSuffixes) {
+    if (hostname.endsWith(suffix)) {
+      return origin;
+    }
+  }
+
+  return "";
+};
 
 async function nativeDecompress(
   buf: ArrayBuffer,
@@ -105,14 +173,7 @@ export default {
       return new Response("Invalid URL", { status: 404 });
     }
 
-    let allowedOrigin = "";
-    if (typeof env.ALLOWED_ORIGINS !== "undefined") {
-      for (const o of env.ALLOWED_ORIGINS.split(",")) {
-        if (o === request.headers.get("Origin") || o === "*") {
-          allowedOrigin = o;
-        }
-      }
-    }
+    const allowedOrigin = getAllowedOrigin(request.headers.get("Origin"), env);
 
     const cached = await cache.match(request.url);
     if (cached) {
