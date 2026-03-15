@@ -2,11 +2,11 @@
   "name": "pmtiles-cloudflare",
   "version": "0.0.1",
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.4.7",
     "@cloudflare/workers-types": "^4.20260313.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "wrangler": "4.13.2"
+    "wrangler": "4.73.0"
   },
   "private": true,
   "scripts": {
