@@ -1,0 +1,27 @@
+name = "protomap"
+main = "src/index.ts"
+compatibility_date = "2025-04-02"
+minify = false
+
+r2_buckets  = [
+  { binding = "BUCKET", preview_bucket_name = "protomap", bucket_name = "protomap" }
+]
+
+[vars]
+# Exact-match origins used for diagnostics and demos.
+DIAGNOSTIC_ORIGINS = "https://maplibre.org,https://pmtiles.io,https://protomaps.github.io"
+
+# Exact-match origins used for local development and tunnels.
+DEV_ORIGINS = "http://localhost:5173,http://192.168.1.100.traefik.me:5173,https://192.168.1.100,https://dove-main-tapir.ngrok-free.app"
+
+# Wildcard-style suffixes for first-party multi-tenant domains.
+CORE_ORIGIN_SUFFIXES = "*.hype.hk,*.type.hk"
+
+# Exact-match hub domains served directly on custom domains.
+HUB_ORIGINS = "https://hype.hk,https://breadline.hk,https://hkghostsigns.com"
+PREVIEW_PREFIXES = "preview."
+
+# Exact-match non-hub external domains that still need tile access.
+EXTERNAL_ORIGINS = "https://ghostsigns.hk,https://tramways-primary.datalayer.workers.dev"
+
+CACHE_CONTROL = "public, max-age=86400"
