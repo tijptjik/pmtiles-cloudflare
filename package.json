@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@cloudflare/workers-types": "^4.20250425.0",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3",
+    "@cloudflare/workers-types": "^4.20260313.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "wrangler": "4.13.2"
   },
   "private": true,
@@ -19,6 +19,6 @@
     "biome-check": "biome check --config-path=../../js src/index.ts"
   },
   "dependencies": {
-    "pmtiles": "^4.3.0"
+    "pmtiles": "^4.4.0"
   }
 }
